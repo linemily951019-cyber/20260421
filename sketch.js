@@ -19,6 +19,13 @@ function setup() {
       speed: random(1, 3)   // 隨機上升速度
     });
   }
+  
+  // 建立拍照按鈕
+  let btn = createButton('📷 拍照');
+  btn.position(20, 20); // 放在畫面左上角（視訊圖片外）
+  btn.style('font-size', '18px');
+  btn.style('padding', '10px 20px');
+  btn.mousePressed(takeScreenshot); // 設定按下按鈕時執行的函數
 }
 
 function draw() {
@@ -57,4 +64,14 @@ function draw() {
   // 將這張 pg 圖片重疊畫在視訊畫面的上方
   image(pg, 0, 0, imgWidth, imgHeight);
   pop(); // 恢復原本的座標系統，避免影響其他繪圖
+}
+
+// 拍照並下載截圖的函數
+function takeScreenshot() {
+  let imgWidth = width * 0.75;
+  let imgHeight = height * 0.75;
+  
+  // 使用 get(x, y, w, h) 只擷取畫面中「視訊圖片」的範圍
+  let screenshot = get((width - imgWidth) / 2, (height - imgHeight) / 2, imgWidth, imgHeight);
+  screenshot.save('my_photo', 'jpg'); // 將擷取的圖片儲存為 jpg 格式
 }
