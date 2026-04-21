@@ -9,8 +9,8 @@ function setup() {
 function draw() {
   background(255, 240, 245); // 將背景設為粉白色
   
-  let imgWidth = width * 0.6;
-  let imgHeight = height * 0.6;
+  let imgWidth = width * 0.75;
+  let imgHeight = height * 0.75;
   
   // 設定影像繪製模式為以中心為基準，並畫在畫布正中央
   imageMode(CENTER);
