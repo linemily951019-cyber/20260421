@@ -1,5 +1,6 @@
 let capture;
 let pg; // 宣告一個變數用來存放額外的透明圖層
+let bubbles = []; // 宣告一個陣列來存放泡泡的資料
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -8,6 +9,16 @@ function setup() {
   
   // 產生一個與視訊畫面預計顯示大小一樣的圖層 (寬高的 75%)
   pg = createGraphics(width * 0.75, height * 0.75);
+  
+  // 初始化泡泡資料
+  for (let i = 0; i < 30; i++) {
+    bubbles.push({
+      x: random(pg.width),
+      y: random(pg.height),
+      size: random(10, 40), // 隨機大小 10 到 40
+      speed: random(1, 3)   // 隨機上升速度
+    });
+  }
 }
 
 function draw() {
@@ -18,8 +29,23 @@ function draw() {
   
   // 在 pg 上面繪製你想要的內容
   pg.clear(); // 每一幀必須先清除上一幀的圖形，維持圖層透明
-  pg.fill(0, 255, 0, 150); // 設定半透明綠色
-  pg.circle(pg.width / 2, pg.height / 2, 100); // 示範：在圖層正中央畫一個圓
+  
+  // 繪製泡泡效果 (使用半透明的水藍色)
+  pg.noStroke();
+  pg.fill(100, 200, 255, 150);
+  for (let i = 0; i < bubbles.length; i++) {
+    let b = bubbles[i];
+    pg.circle(b.x, b.y, b.size);
+    
+    b.y -= b.speed; // 讓泡泡往上飄
+    b.x += sin(frameCount * 0.05 + i) * 1; // 利用 sin 函數產生左右搖擺的自然漂浮感
+    
+    // 如果泡泡飄出畫面上方，讓它從底部隨機水平位置重新出現
+    if (b.y < -b.size) {
+      b.y = pg.height + b.size;
+      b.x = random(pg.width);
+    }
+  }
   
   // 設定影像繪製模式為以中心為基準，並畫在畫布正中央
   push();
