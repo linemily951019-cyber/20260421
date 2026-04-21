@@ -21,7 +21,7 @@ function setup() {
   }
   
   // 建立拍照按鈕
-  let btn = createButton('📷 拍照');
+  let btn = createButton(' 📷 ');
   btn.position(20, 20); // 放在畫面左上角（視訊圖片外）
   btn.style('font-size', '18px');
   btn.style('padding', '10px 20px');
@@ -58,10 +58,38 @@ function draw() {
   push();
   translate(width / 2, height / 2); // 將座標原點移至畫面中央
   scale(-1, 1); // 進行水平翻轉 (X軸乘上 -1)
-  imageMode(CENTER);
-  image(capture, 0, 0, imgWidth, imgHeight); // 因為原點已移至中央，直接在 (0, 0) 畫出影像即可
+  
+  // 讀取視訊畫面的像素資料來製作黑白馬賽克
+  capture.loadPixels();
+  if (capture.pixels.length > 0) {
+    let step = 20; // 設定馬賽克一個單位的寬高
+    noStroke();
+    rectMode(CORNER); // 方塊以左上角為起點繪製
+    
+    for (let y = 0; y < imgHeight; y += step) {
+      for (let x = 0; x < imgWidth; x += step) {
+        // 將畫布上迴圈的 x, y 對應回原始視訊的像素座標
+        let cx = floor(map(x, 0, imgWidth, 0, capture.width));
+        let cy = floor(map(y, 0, imgHeight, 0, capture.height));
+        
+        // 取得一維像素陣列的索引 (每個像素包含 R, G, B, A 四個數值)
+        let index = (cy * capture.width + cx) * 4;
+        let r = capture.pixels[index];
+        let g = capture.pixels[index + 1];
+        let b = capture.pixels[index + 2];
+        
+        // 計算 RGB 平均值作為灰階顏色值
+        let gray = (r + g + b) / 3;
+        
+        fill(gray);
+        // 畫出馬賽克單位方塊 (從左上角偏移畫出)
+        rect(x - imgWidth / 2, y - imgHeight / 2, step, step);
+      }
+    }
+  }
   
   // 將這張 pg 圖片重疊畫在視訊畫面的上方
+  imageMode(CENTER);
   image(pg, 0, 0, imgWidth, imgHeight);
   pop(); // 恢復原本的座標系統，避免影響其他繪圖
   
