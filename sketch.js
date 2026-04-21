@@ -39,7 +39,7 @@ function draw() {
   
   // 繪製泡泡效果 (使用半透明的水藍色)
   pg.noStroke();
-  pg.fill(100, 200, 255, 150);
+  pg.fill(100, 200, 255, 80); // 降低 Alpha 值讓泡泡透明度更高
   for (let i = 0; i < bubbles.length; i++) {
     let b = bubbles[i];
     pg.circle(b.x, b.y, b.size);
@@ -64,6 +64,46 @@ function draw() {
   // 將這張 pg 圖片重疊畫在視訊畫面的上方
   image(pg, 0, 0, imgWidth, imgHeight);
   pop(); // 恢復原本的座標系統，避免影響其他繪圖
+  
+  // 繪製緊貼視訊畫面邊緣的藤蔓線條
+  push();
+  // 將起點稍微往內縮，確保線條完全在截圖範圍內且緊貼畫面邊緣
+  let inset = 6; 
+  let startX = (width - imgWidth) / 2 + inset;
+  let startY = (height - imgHeight) / 2 + inset;
+  let frameW = imgWidth - inset * 2;
+  let frameH = imgHeight - inset * 2;
+  let perimeter = frameW * 2 + frameH * 2; // 計算縮排後的總周長
+  
+  // 繪製像藤蔓般順暢的白色線條
+  noFill();
+  stroke(255);
+  strokeWeight(8); // 稍微調細一點點，讓藤蔓感更精緻
+  beginShape();
+  // 為了讓曲線完美閉合，我們多走幾個點來重疊 (所以迴圈跑到 perimeter + 50)
+  for (let d = 0; d <= perimeter + 50; d += 15) { 
+    let currentD = d % perimeter; // 確保基本座標會繞圈
+    let px, py;
+    if (currentD < frameW) { 
+      px = startX + currentD; py = startY; 
+    } else if (currentD < frameW + frameH) { 
+      px = startX + frameW; py = startY + (currentD - frameW); 
+    } else if (currentD < frameW * 2 + frameH) { 
+      px = startX + frameW - (currentD - (frameW + frameH)); py = startY + frameH; 
+    } else { 
+      px = startX; py = startY + frameH - (currentD - (frameW * 2 + frameH)); 
+    }
+    
+    // 利用圓形映射來產生「完美閉合且平滑」的雜訊
+    let angle = map(d, 0, perimeter, 0, TWO_PI);
+    // 降低雜訊偏移量 (從 60 降到 15)，讓線條穩穩地貼齊在邊緣
+    let noiseX = (noise(cos(angle) * 1.5, sin(angle) * 1.5) - 0.5) * 15;
+    let noiseY = (noise(cos(angle) * 1.5 + 100, sin(angle) * 1.5 + 100) - 0.5) * 15;
+    
+    curveVertex(px + noiseX, py + noiseY); // 改用 curveVertex 畫出平滑曲線
+  }
+  endShape();
+  pop();
 }
 
 // 拍照並下載截圖的函數
